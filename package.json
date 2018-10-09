@@ -1,0 +1,36 @@
+{
+  "name": "news-importer",
+  "version": "0.0.1",
+  "description": "news scrapping",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/paradoxofvalue/news-importer.git"
+  },
+  "keywords": [
+    "scrapping",
+    "wordpress",
+    "plugin",
+    "news",
+    "importer"
+  ],
+  "author": "Vadym Lavorchuk",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/paradoxofvalue/news-importer/issues"
+  },
+  "homepage": "https://github.com/paradoxofvalue/news-importer#readme",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.2",
+    "needle": "^2.2.2",
+    "proxy-lists": "^1.15.3",
+    "request": "^2.87.0",
+    "request-promise": "^4.2.2",
+    "sqlite3": "^4.0.2",
+    "tress": "^1.1.3",
+    "tunnel": "0.0.5"
+  }
+}
