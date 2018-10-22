@@ -36,9 +36,12 @@ function news_importer_menu() {
 
 function register_mysettings() {
 	//register our settings
-	register_setting( 'ni-settings-group', 'new_option_name' );
-	register_setting( 'ni-settings-group', 'some_other_option' );
-	register_setting( 'ni-settings-group', 'option_etc' );
+	register_setting( 'ni-settings-group', 'ni-status' );
+	register_setting( 'ni-settings-group', 'ni-site-1' );
+	register_setting( 'ni-settings-group', 'ni-site-2' );
+	register_setting( 'ni-settings-group', 'ni-site-3' );
+	register_setting( 'ni-settings-group', 'ni-site-4' );
+	register_setting( 'ni-settings-group', 'ni-site-5' );
 }
 
 function ni_settings_page() {
@@ -47,21 +50,31 @@ function ni_settings_page() {
 <h2>News Importer Settings</h2>
 
 <form method="post" action="options.php">
+    <span>Статус: <?= get_option('ni-status');?></span>
     <?php settings_fields( 'ni-settings-group' ); ?>
     <table class="form-table">
         <tr valign="top">
         <th scope="row">website #1</th>
-        <td><input type="text" name="new_option_name" value="<?php echo get_option('new_option_name'); ?>" /></td>
+        <td><input type="text" name="ni-site-1" value="<?php echo get_option('ni-site-1'); ?>" /></td>
         </tr>
          
         <tr valign="top">
         <th scope="row">website #2</th>
-        <td><input type="text" name="some_other_option" value="<?php echo get_option('some_other_option'); ?>" /></td>
+        <td><input type="text" name="ni-site-2" value="<?php echo get_option('ni-site-2'); ?>" /></td>
         </tr>
         
         <tr valign="top">
         <th scope="row">website #3</th>
-        <td><input type="text" name="option_etc" value="<?php echo get_option('option_etc'); ?>" /></td>
+        <td><input type="text" name="ni-site-3" value="<?php echo get_option('ni-site-3'); ?>" /></td>
+        </tr>
+
+        <tr valign="top">
+        <th scope="row">website #4</th>
+        <td><input type="text" name="ni-site-4" value="<?php echo get_option('ni-site-4'); ?>" /></td>
+        </tr>
+        <tr valign="top">
+        <th scope="row">website #5</th>
+        <td><input type="text" name="ni-site-5" value="<?php echo get_option('ni-site-5'); ?>" /></td>
         </tr>
     </table>
     
