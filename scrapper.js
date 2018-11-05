@@ -13,10 +13,11 @@ sequelize
         `SELECT option_value FROM wp_options WHERE option_name LIKE "ni-site-%"`,
     )
     .then(sites => {
-        new Parser(sites[0].map(site => {
-            return site.option_value;
-        }));
-    })
+        // new Parser(sites[0].map(site => {
+        //     return site.option_value;
+        // }));
+        new Parser([sites[0][0].option_value]);
+    });
 
 class Parser {
     constructor(websitesList) {
@@ -24,7 +25,7 @@ class Parser {
         this.paginates = tress(this.performPaginates.bind(this));
         this.news = tress(this.performNews);
 
-        // this.news.drain = this.finished('news');
+        this.news.drain = this.finished('news');
 
         this.websitesList.forEach(websiteUrl => {
             if (websiteUrl) {
@@ -90,6 +91,7 @@ class Parser {
                         self.news.push($(elem).attr('href'));
                     })
                 }
+              callback();
 
             })
             .catch((err) => {
@@ -137,8 +139,9 @@ class Parser {
                     })
                 }
 
+                console.log(title, text, images);
 
-                // callback();
+                callback();
 
             })
             .catch((err) => {
@@ -147,17 +150,7 @@ class Parser {
 
     }
     finished(type) {
-        console.log(`${type} Done!!!`);
+      debugger
+      console.log(`${type} Done!!!`);
     }
 }
-
-//     var sql = "SELECT `option_value` FROM `wp_options1` WHERE `option_name` LIKE 'ni-site-%'";
-
-// error => {
-//     connection.connect();
-//     var sql = "UPDATE `wp_options` SET `option_value` = '"+error+"' WHERE `option_name` = 'ni-status'";
-//     connection.query(sql, function (err, result) {
-//         if (result) console.log(error)
-//     })
-//     connection.end();
-// });
