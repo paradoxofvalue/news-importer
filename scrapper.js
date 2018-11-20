@@ -23,53 +23,55 @@ sequelize
         }
       ];
       console.info('Data fetched from WP!');
-      new Parser(sites[0]);
+
+      let websitesConf = Parser.performDataFromWPDB(sites[0]);
+      websitesConf.forEach(websiteConf => {
+        if (websiteConf.websiteUrl) {
+          new Parser(websiteConf);
+        }
+      });
+
+      /**
+       * да мне лень переписывать функции)
+       * суть в том что терялся currentWebsite а так уже не будет)
+       */
     });
 
 class Parser {
-  constructor(websitesList) {
+  constructor(websiteConf) {
     console.info('Parser constructor!');
-    this.websitesList = this.performDataFromWPDB(websitesList);
+
     this.paginates = tress(this.performPaginates.bind(this));
     this.news = tress(this.performNews.bind(this));
-    console.info('Websites List:', this.websitesList);
-    this.currentWebsite = {};
+    console.info('Websites Configuration:', websiteConf);
+    this.currentWebsite = websiteConf;
 
-    // this.websitesList.forEach(websiteConfiguration => {
-      let websiteConfiguration = this.websitesList[1];
-      this.currentWebsite = websiteConfiguration;
-      console.info('Website taken:', this.currentWebsite);
-      if (websiteConfiguration && websiteConfiguration.websiteUrl) {
-        needle('get', websiteConfiguration.websiteUrl)
-            .then((res) => {
-              let $ = cheerio.load(res.body);
+    needle('get', websiteConf.websiteUrl)
+        .then((res) => {
+          let $ = cheerio.load(res.body);
 
-              if ($(`${this.currentWebsite.linksSelector}`).length > 5) {
-                $(`${this.currentWebsite.linksSelector}`).each((i, elem) => {
-                  this.news.push($(elem).attr('href'));
-                });
-              }
+          if ($(`${this.currentWebsite.linksSelector}`).length > 5) {
+            $(`${this.currentWebsite.linksSelector}`).each((i, elem) => {
+              this.news.push($(elem).attr('href'));
+            });
+          }
 
-              if (this.currentWebsite.paginationLinksSelector) {
-                if ($(`${this.currentWebsite.paginationLinksSelector}`).length > 5 &&
-                    $(`${this.currentWebsite.paginationLinksSelector}`).length < 50) {
-                  $(`${this.currentWebsite.paginationLinksSelector}`).each((i, elem) => {
-                    this.paginates.push($(elem).attr('href'));
-                  })
-                }
-              }
+          if (this.currentWebsite.paginationLinksSelector) {
+            if ($(`${this.currentWebsite.paginationLinksSelector}`).length > 5 &&
+                $(`${this.currentWebsite.paginationLinksSelector}`).length < 50) {
+              $(`${this.currentWebsite.paginationLinksSelector}`).each((i, elem) => {
+                this.paginates.push($(elem).attr('href'));
+              })
+            }
+          }
 
-            })
-            .catch((err) => {
-              debugger;
-            })
-      }
-    // });
-
-    // this.news.drain = this.finished('news');
+        })
+        .catch((err) => {
+          debugger;
+        })
   }
 
-  performDataFromWPDB(array) {
+  static performDataFromWPDB(array) {
     let tempArray = [];
     array.forEach((item, key) => {
       let index = item.option_name.substr(item.option_name.length - 1, item.option_name.length);
@@ -151,7 +153,8 @@ class Parser {
             })
           }
           console.log(title, text, images);
-          this.saveToDraft({title, text, images, iframes}, callback);
+          let newData = this.performNewsData(title, text, images, iframes);
+          this.saveToDraft(newData, callback);
 
         })
         .catch((err) => {
@@ -160,12 +163,39 @@ class Parser {
 
   }
 
+  performNewsData(title, text, images, iframes) {
+    let newObject = {
+      title: '',
+      content: '',
+    };
+
+    if (images && images.length) {
+      newObject.content = '<div class="owl-carousel">';
+      images.forEach(image => {
+        if (!image.src.includes('http')) {
+          image.src = this.currentWebsite.websiteUrl + image.src;
+        }
+        newObject.content += `<div><img src="${image.src}" alt="${image.alt}" /></div>`;
+      });
+      newObject.content += '</div>'
+    }
+    newObject.title = title;
+    newObject.content += `<div class="content">${text}</div>`;
+
+    return newObject;
+  }
+
   saveToDraft(data, callback) {
     let date = new Date(),
-        dateString = `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+        dateString = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`,
+        content = '';
     sequelize
         .query(
-            `INSERT INTO wp_posts (ID, post_author, post_date, post_date_gmt, post_content, post_title, post_excerpt, post_status, comment_status, ping_status, post_password, post_name, to_ping, pinged, post_modified, post_modified_gmt, post_content_filtered, post_parent, guid, menu_order, post_type, post_mime_type, comment_count) VALUES ('0', '1', '${dateString}', '${dateString}', '${data.text}', '${data.title}', '', 'draft', 'open', 'open', '', '', '', '', '${dateString}', '${dateString}', '', '0', '', '0', 'post', '', '0')`,
+            "INSERT INTO " +
+            "wp_posts " +
+            "(ID, post_author, post_date, post_date_gmt, post_content, post_title, post_excerpt, post_status, comment_status, ping_status, post_password, post_name, to_ping, pinged, post_modified, post_modified_gmt, post_content_filtered, post_parent, guid, menu_order, post_type, post_mime_type, comment_count) " +
+            "VALUES " +
+            "('0', '1', '" + dateString + "', '" + dateString + "', '" + data.content + "', '" + data.title + "', '', 'draft', 'open', 'open', '', '', '', '', '" + dateString + "', '" + dateString + "', '', '0', '', '0', 'post', '', '0')"
         )
         .then(res => {
           debugger;
