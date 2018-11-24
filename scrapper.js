@@ -13,15 +13,6 @@ sequelize
         `SELECT option_name, option_value FROM wp_options WHERE option_name LIKE "ni-site-%"`,
     )
     .then(sites => {
-      let websitesConfigurations = [
-        {
-          websiteUrl: '',
-          linksSelector: '',
-          paginationLinksSelector: '',
-          titleSelector: '',
-          contentSelector: '',
-        }
-      ];
       console.info('Data fetched from WP!');
 
       let websitesConf = Parser.performDataFromWPDB(sites[0]);
@@ -168,6 +159,16 @@ class Parser {
       title: '',
       content: '',
     };
+    let styles = `
+          <link rel="stylesheet" href="/wordpress/wp-content/plugins/news-importer/owl/assets/owl.carousel.min.css">
+          <link rel="stylesheet" href="/wordpress/wp-content/plugins/news-importer/owl/assets/owl.theme.default.min.css">
+          <link rel="stylesheet" href="/wordpress/wp-content/plugins/news-importer/styles.css">
+        `,
+        scripts = `
+          <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+          <script src="/wordpress/wp-content/plugins/news-importer/owl/owl.carousel.min.js"></script>
+          <script src="/wordpress/wp-content/plugins/news-importer/script.js"></script>
+        `;
 
     if (images && images.length) {
       newObject.content = '<div class="owl-carousel">';
@@ -177,10 +178,10 @@ class Parser {
         }
         newObject.content += `<div><img src="${image.src}" alt="${image.alt}" /></div>`;
       });
-      newObject.content += '</div>'
+      newObject.content += '</div>';
     }
     newObject.title = title;
-    newObject.content += `<div class="content">${text}</div>`;
+    newObject.content += `${styles}<div class="content">${text}</div>${scripts}`;
 
     return newObject;
   }
